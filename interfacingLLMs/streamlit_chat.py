@@ -49,11 +49,11 @@ openai.api_key = apiKey
 @st.cache_resource(show_spinner=False)
 class SearchBackend1():
   def __init__(self):
-    self.indexCreated = False
+    #   self.indexCreated = False
     self.index = None
-    self.queryEngine = None
-    self.persistDir = "interfacingLLMs/stored_embeddings/pubmed"
-    self.userId = str(uuid.uuid4())
+    #self.queryEngine = None
+    #self.persistDir = "/Users/arihantbarjatya/Documents/fastbio/database_storage/stored_embeddings/pubmed"
+    #self.userId = str(uuid.uuid4())
     self.pubObj = PubmedManager()
 
 
@@ -71,21 +71,30 @@ class SearchBackend1():
   def main(self,query):
     with st.spinner("Creating the best response for you"):
         currentDocs = self.fetch_docs(query)
-    if self.indexCreated == False:
         self.index = VectorStoreIndex.from_documents(currentDocs)
-        self.index.set_index_id(self.userId)
-        indexPath = self.persistDir+"/"+self.userId
-        if not os.path.exists(indexPath):
-        	os.makedirs(indexPath)
-        self.index.storage_context.persist(indexPath)
-        self.indexCreated = True
         self.queryEngine = self.index.as_query_engine()
-    else:
-        self.update_index(currentDocs)
-        self.queryEngine = self.index.as_query_engine()
+        # if self.indexCreated == False:
+        #     self.index = VectorStoreIndex.from_documents(currentDocs)
+        #     self.index.set_index_id(self.userId)
+        #     indexPath = self.persistDir+"/"+self.userId
+        #     if not os.path.exists(indexPath):
+        #         os.makedirs(indexPath)
+        #     self.index.storage_context.persist(indexPath)
+        #     self.indexCreated = True
+        #     self.queryEngine = self.index.as_query_engine()
+        # else:
+        #     self.update_index(currentDocs)
+        #     self.queryEngine = self.index.as_query_engine()
     
-    response = self.queryEngine.query(query)
-    return response
+        response = self.queryEngine.query(query)
+        
+        citations = []
+        for node in response.source_nodes:
+            title = node.node.metadata["Title of this paper"]
+            url = node.node.metadata["URL"]
+            citations.append((title,url))
+    
+    return response,citations
 
 def searchButtonCallback():
 	st.session_state.search = True
@@ -122,17 +131,10 @@ def rebootandlog():
 searchObj1 = SearchBackend1()
 
 if st.session_state.search:
-    response = searchObj1.main(st.session_state.query)
+    response,citations = searchObj1.main(st.session_state.query)
     st.session_state.response = str(response)
-    
-    citations = []
-    for node in response.source_nodes:
-        title = node.node.metadata["Title of this paper"]
-        url = node.node.metadata["URL"]
-        citations.append((title,url))
-    
-    col1,col2 = st.columns([0.8,0.2])
     st.session_state.references = citations
+    col1,col2 = st.columns([0.8,0.2])
     with col1:
         st.subheader("Query")
         st.markdown(st.session_state.query)

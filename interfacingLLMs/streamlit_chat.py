@@ -51,7 +51,7 @@ class SearchBackend1():
   def __init__(self):
     #   self.indexCreated = False
     self.index = None
-    #self.queryEngine = None
+    self.queryEngine = None
     #self.persistDir = "/Users/arihantbarjatya/Documents/fastbio/database_storage/stored_embeddings/pubmed"
     #self.userId = str(uuid.uuid4())
     self.pubObj = PubmedManager()

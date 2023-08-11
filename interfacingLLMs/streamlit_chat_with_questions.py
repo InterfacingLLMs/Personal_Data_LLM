@@ -54,7 +54,7 @@ class SearchBackend1():
     #   self.indexCreated = False
     self.index = None
     #self.queryEngine = None
-    #self.persistDir = "interfacingLLMs/database_storage/stored_embeddings/pubmed"
+    #self.persistDir = "/Users/arihantbarjatya/Documents/fastbio/database_storage/stored_embeddings/pubmed"
     #self.userId = str(uuid.uuid4())
     self.pubObj = PubmedManager()
 
@@ -178,27 +178,33 @@ if st.session_state.search:
     tab1,tab2 = st.tabs(["Home","More Info!"])
     
     with tab1:
-        col1,col2 = st.columns([0.8,0.2])
-        with col1:
-            st.subheader("Query")
-            st.markdown(st.session_state.query)
-        with col2:
+        queryCol1,queryCol2 = st.columns([0.8,0.2])
+        with queryCol1:
+            #st.subheader("Query")
+            st.write(f'<p style="font-size:30px"><b>Query</b></p>',unsafe_allow_html=True)
+            #st.markdown(st.session_state.query)
+            st.write(f'{st.session_state.query}',
+unsafe_allow_html=True)
+        with queryCol2:
             st.button("Edit Query",on_click = editcallback)
-        st.subheader("Response")
-        st.markdown(st.session_state.response)
-
+        st.write(f'<p style="font-size:30px"><b>Response</b></p>',unsafe_allow_html=True)
+        #st.markdown(f"*:{st.session_state.response}:*")
+        st.write(f'<i>{st.session_state.response}</i>',
+unsafe_allow_html=True)
+        st.markdown("")
+        st.markdown("")
         otherPapercheck = []
         with st.expander("Citations"):
             for i,reference in enumerate(citations):
-                col1,col2 = st.columns([0.9,0.1])
-                with col1:
+                citationsCol1,citationsCol2 = st.columns([0.9,0.1])
+                with citationsCol1:
                     st.caption(reference[0])
                     st.caption(reference[1])
                     otherPapercheck.append(str(reference[1]))
-                with col2:
+                with citationsCol2:
                     st.button(":thumbsdown:",key=f"Citations{i}")    
 
-
+        st.markdown("")
         if response != None:
             createNewQuestions(st.session_state.query,st.session_state.response) 
 
@@ -213,8 +219,8 @@ if st.session_state.search:
             st.session_state["feedbackText"] = feedbackText
         st.markdown("")
         st.markdown("") 
-        col1, col2, col3 = st.columns([1,1,1])
-        col2.button("Search Again!", on_click=reboot,type="primary")
+        finalCol1, finalCol2, finalCol3 = st.columns([1,1,1])
+        finalCol2.button("Search Again!", on_click=reboot,type="primary")
 
     
     with tab2:
@@ -222,12 +228,12 @@ if st.session_state.search:
             for i,data in enumerate(pubmedPapers):
                 url = data["url"]
                 url = str(url)
-                col1,col2 = st.columns([0.9,0.1])
+                relevantCol1,relevantCol2 = st.columns([0.9,0.1])
                 if url not in otherPapercheck:
-                    with col1:
+                    with relevantCol1:
                         st.caption(data["title"])
                         st.caption(url)
-                    with col2:
+                    with relevantCol2:
                         st.button(":thumbsup:",key=f"{i}")
 
 

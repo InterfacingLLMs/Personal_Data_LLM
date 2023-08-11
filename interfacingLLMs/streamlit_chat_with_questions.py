@@ -8,7 +8,7 @@ import openai
 import uuid
 
 
-#initialisation
+#initialization
 if "search" not in st.session_state:
     st.session_state["search"] = False
 if "query" not in st.session_state:
@@ -95,9 +95,9 @@ if st.session_state["search"] == False:
     # engine = st.selectbox('Select Engine',["Engine1","Engine2","Engine3"])   
     # st.session_state["engine"] = engine
     if st.session_state.query == None:
-        userInput = st.text_input("Search with papers")
+        userInput = st.text_input("Search from papers")
     else:
-        userInput = st.text_input("Search with papers",value=st.session_state.query)
+        userInput = st.text_input("Search from papers",value=st.session_state.query)
     st.session_state.query = userInput
     buttonClick = st.button("Ask",on_click=searchButtonCallback)
 

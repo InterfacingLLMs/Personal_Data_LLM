@@ -8,7 +8,7 @@ import openai
 import uuid
 
 
-#initialization
+#initialisation
 if "search" not in st.session_state:
     st.session_state["search"] = False
 if "query" not in st.session_state:
@@ -30,7 +30,7 @@ if "references" not in st.session_state:
 st.set_page_config(page_title="fastbio")
 col1,col2,col3 = st.columns([1,1,1])
 col2.title("FastBio")
-st.divider()
+
 
 #sidebar
 apiKey = st.sidebar.text_input("OpenAI API Key", type="password")
@@ -95,9 +95,9 @@ if st.session_state["search"] == False:
     # engine = st.selectbox('Select Engine',["Engine1","Engine2","Engine3"])   
     # st.session_state["engine"] = engine
     if st.session_state.query == None:
-        userInput = st.text_input("Search from papers")
+        userInput = st.text_input("Search with papers")
     else:
-        userInput = st.text_input("Search from papers",value=st.session_state.query)
+        userInput = st.text_input("Search with papers",value=st.session_state.query)
     st.session_state.query = userInput
     buttonClick = st.button("Ask",on_click=searchButtonCallback)
 
@@ -189,8 +189,10 @@ unsafe_allow_html=True)
             st.button("Edit Query",on_click = editcallback)
         st.write(f'<p style="font-size:30px"><b>Response</b></p>',unsafe_allow_html=True)
         #st.markdown(f"*:{st.session_state.response}:*")
-        st.write(f'<i>{st.session_state.response}</i>',
-unsafe_allow_html=True)
+        if st.session_state.response != "None":
+            st.write(f'<i>{st.session_state.response}</i>',unsafe_allow_html=True)
+        else:
+            st.write(f'<i>Sorry! Try a different question</i>',unsafe_allow_html=True)
         st.markdown("")
         st.markdown("")
         otherPapercheck = []
@@ -198,15 +200,17 @@ unsafe_allow_html=True)
             for i,reference in enumerate(citations):
                 citationsCol1,citationsCol2 = st.columns([0.9,0.1])
                 with citationsCol1:
-                    st.caption(reference[0])
-                    st.caption(reference[1])
+                    st.write(f'<a href = {reference[1]}>{reference[0]}</a>',unsafe_allow_html=True)
                     otherPapercheck.append(str(reference[1]))
                 with citationsCol2:
-                    st.button(":thumbsdown:",key=f"Citations{i}")    
+                    st.button(":thumbsup:",key=f"citationsPositive{i}")
+                    st.button(":thumbsdown:",key=f"citationsNegative{i}")    
 
-        st.markdown("")
-        if response != None:
-            createNewQuestions(st.session_state.query,st.session_state.response) 
+        # st.markdown("")
+        
+        if st.session_state.response != "None":
+            with st.expander("Deep Dive"):
+                createNewQuestions(st.session_state.query,st.session_state.response) 
 
 
         st.divider()
@@ -231,10 +235,13 @@ unsafe_allow_html=True)
                 relevantCol1,relevantCol2 = st.columns([0.9,0.1])
                 if url not in otherPapercheck:
                     with relevantCol1:
-                        st.caption(data["title"])
-                        st.caption(url)
+                        st.write(f'<a href = {url}>{data["title"]}</a>',unsafe_allow_html=True)
+                        # st.caption(data["title"])
+                        # st.caption(url)
                     with relevantCol2:
-                        st.button(":thumbsup:",key=f"{i}")
+                        st.button(":thumbsup:",key=f"positive{i}")
+                        st.button(":thumbsdown:",key=f"negative{i}")
+                        
 
 
 

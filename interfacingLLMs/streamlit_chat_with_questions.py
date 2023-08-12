@@ -207,7 +207,7 @@ unsafe_allow_html=True)
                 citationsCol1,citationsCol2 = st.columns([0.9,0.1])
                 with citationsCol1:
                     st.write(f'<a href = {reference[2]}>{reference[1]}</a>',unsafe_allow_html=True)
-                    st.write(f'<i>{reference[0]}</i>',unsafe_allow_html=True)
+                    st.caption(f'<i>{reference[0]}</i>',unsafe_allow_html=True)
                     st.caption(f'Confidence Score: {round(reference[3],2)}')
                     st.markdown("")
                     otherPapercheck.append(str(reference[1]))
@@ -245,7 +245,7 @@ unsafe_allow_html=True)
                 if url not in otherPapercheck:
                     with relevantCol1:
                         st.write(f'<a href = {url}>{data["title"]}</a>',unsafe_allow_html=True)
-                        st.write(f'<i>{data["abstract"]}</i>',unsafe_allow_html=True)
+                        st.caption(f'<i>{data["abstract"]}</i>',unsafe_allow_html=True)
                         # st.caption(data["title"])
                         # st.caption(url)
                     with relevantCol2:

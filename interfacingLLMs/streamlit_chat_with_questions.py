@@ -105,7 +105,7 @@ if st.session_state["search"] == False:
     else:
         userInput = st.text_input("Search with papers",value=st.session_state.query)
     st.session_state.query = userInput
-    buttonClick = st.button("Ask",on_click=searchButtonCallback)
+    buttonClick = st.button("Search",on_click=searchButtonCallback)
 
 def log():
     pass

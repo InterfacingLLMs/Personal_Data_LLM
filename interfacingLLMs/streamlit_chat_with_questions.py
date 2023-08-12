@@ -81,9 +81,15 @@ class SearchBackend1():
         
         citations = []
         for node in response.source_nodes:
+            # print(node)
+            start_idx = node.node.start_char_idx
+            end_idx = node.node.end_char_idx
+            text = node.node.text
+            text = text[start_idx:end_idx]
+            score = node.score
             title = node.node.metadata["Title of this paper"]
             url = node.node.metadata["URL"]
-            citations.append((title,url))
+            citations.append([text,title,url,score])
     
     return response,citations,pubmedPapers
 
@@ -200,7 +206,10 @@ unsafe_allow_html=True)
             for i,reference in enumerate(citations):
                 citationsCol1,citationsCol2 = st.columns([0.9,0.1])
                 with citationsCol1:
-                    st.write(f'<a href = {reference[1]}>{reference[0]}</a>',unsafe_allow_html=True)
+                    st.write(f'<a href = {reference[2]}>{reference[1]}</a>',unsafe_allow_html=True)
+                    st.write(f'<i>{reference[0]}</i>',unsafe_allow_html=True)
+                    st.caption(f'Confidence Score: {round(reference[3],2)}')
+                    st.markdown("")
                     otherPapercheck.append(str(reference[1]))
                 with citationsCol2:
                     st.button(":thumbsup:",key=f"citationsPositive{i}")
@@ -236,6 +245,7 @@ unsafe_allow_html=True)
                 if url not in otherPapercheck:
                     with relevantCol1:
                         st.write(f'<a href = {url}>{data["title"]}</a>',unsafe_allow_html=True)
+                        st.write(f'<i>{data["abstract"]}</i>',unsafe_allow_html=True)
                         # st.caption(data["title"])
                         # st.caption(url)
                     with relevantCol2:

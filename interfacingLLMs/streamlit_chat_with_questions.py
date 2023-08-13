@@ -225,7 +225,7 @@ unsafe_allow_html=True)
         st.divider()
         st.subheader("Feedback")
 
-        responseFeedback = st.radio('Choose for the generated response',options=('Correct Response, No Hallucinations','Hallucinations','Didnt Like the Response','No Response'))
+        responseFeedback = st.radio('Choose for the generated response',options=("Correct Response, No Hallucinations','Hallucinations','Didn't Like the Response','No Response"))
         st.session_state["feedbackRating"] = responseFeedback
         if responseFeedback:
             feedbackText = st.text_area("Please help us understand your feedback better")

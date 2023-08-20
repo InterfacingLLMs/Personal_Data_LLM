@@ -48,6 +48,11 @@ collectorMain=FeedbackCollector(
 
 openai.api_key = st.secrets["OPENAI_API_KEY"]
 
+# openai_api_key = os.environ.get('OPENAI_API_KEY')
+# if not openai_api_key:
+#     raise ValueError("OPENAI_API_KEY not found in environment variables!")
+# openai.api_key = openai_api_key
+
 #main content
 #add logic to create a userId
 #link userId to VectorStoreIndices

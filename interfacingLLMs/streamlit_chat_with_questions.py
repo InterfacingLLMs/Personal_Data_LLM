@@ -194,8 +194,7 @@ if st.session_state.search:
             #st.subheader("Query")
             st.write(f'<p style="font-size:30px"><b>Query</b></p>',unsafe_allow_html=True)
             #st.markdown(st.session_state.query)
-            st.write(f'{st.session_state.query}',
-unsafe_allow_html=True)
+            st.write(f'{st.session_state.query}', unsafe_allow_html=True)
         with queryCol2:
             st.button("Edit Query",on_click = editcallback)
         

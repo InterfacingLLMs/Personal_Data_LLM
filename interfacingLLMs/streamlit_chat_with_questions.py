@@ -6,7 +6,12 @@ from llama_index.readers.schema.base import Document
 import os 
 import openai
 import uuid
-from trubrics.integrations.streamlit import FeedbackCollector
+#from trubrics.integrations.streamlit import FeedbackCollector
+from langchain.agents import create_csv_agent
+from langchain.chat_models import ChatOpenAI
+import os
+from langchain.agents.agent_types import AgentType
+import pandas as pd
 
 # userId = str(uuid.uuid4())
 
@@ -36,17 +41,18 @@ st.divider()
 collectorCitations = FeedbackCollector(
     component_name="citations-feedback",
     email=st.secrets["TRUBRICS_EMAIL"], # Store your Trubrics credentials in st.secrets:
-    password=st.secrets["TRUBRICS_PASSWORD"], # https://blog.streamlit.io/secrets-in-sharing-apps/
+    password=st.secrets["TRUBRICS_EMAIL"], # https://blog.streamlit.io/secrets-in-sharing-apps/
 )
 
 
 collectorMain=FeedbackCollector(
     component_name="default",
     email=st.secrets["TRUBRICS_EMAIL"], # Store your Trubrics credentials in st.secrets:
-    password=st.secrets["TRUBRICS_PASSWORD"], # https://blog.streamlit.io/secrets-in-sharing-apps/
+    password=st.secrets["TRUBRICS_EMAIL"], # https://blog.streamlit.io/secrets-in-sharing-apps/
 )
 
 openai.api_key = st.secrets["OPENAI_API_KEY"]
+os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 
 #main content
 #add logic to create a userId
@@ -164,38 +170,34 @@ userEmail = st.experimental_user.email
 
 
         
-
+tab1,tab2 = st.tabs(["Search","Dataset Explorer"])
             
+with tab1:
+
+    if st.session_state["search"] == False:
+        # engine = st.selectbox('Select Engine',["Engine1","Engine2","Engine3"])   
+        # st.session_state["engine"] = engine
+        if st.session_state.query == None:
+            userInput = st.text_input("Search with papers")
+        else:
+            userInput = st.text_input("Search with papers",value=st.session_state.query)
+        st.session_state.query = userInput
+        buttonClick = st.button("Search",on_click=searchButtonCallback)
 
 
-if st.session_state["search"] == False:
-    # engine = st.selectbox('Select Engine',["Engine1","Engine2","Engine3"])   
-    # st.session_state["engine"] = engine
-    if st.session_state.query == None:
-        userInput = st.text_input("Search with papers")
-    else:
-        userInput = st.text_input("Search with papers",value=st.session_state.query)
-    st.session_state.query = userInput
-    buttonClick = st.button("Search",on_click=searchButtonCallback)
+    if st.session_state.search:
 
+        response,citations,pubmedPapers = searchObj1.main(st.session_state.query)
+        st.session_state.response = str(response)
+        st.session_state.references = citations
 
-if st.session_state.search:
-
-    response,citations,pubmedPapers = searchObj1.main(st.session_state.query)
-    st.session_state.response = str(response)
-    st.session_state.references = citations
-
-
-    tab1,tab2 = st.tabs(["Home","More Info!"])
-    
-    with tab1:
         queryCol1,queryCol2 = st.columns([0.8,0.2])
         with queryCol1:
             #st.subheader("Query")
             st.write(f'<p style="font-size:30px"><b>Query</b></p>',unsafe_allow_html=True)
             #st.markdown(st.session_state.query)
             st.write(f'{st.session_state.query}',
-unsafe_allow_html=True)
+    unsafe_allow_html=True)
         with queryCol2:
             st.button("Edit Query",on_click = editcallback)
         
@@ -239,26 +241,6 @@ unsafe_allow_html=True)
                     # citationPositive = st.button(":thumbsup:",key=f"citationsPositive{i}")
                     # citationPositive = st.button(":thumbsdown:",key=f"citationsNegative{i}")    
 
-        st.markdown("")
-        #st.divider()
-        #st.subheader("Feedback")
-        collectorMain.st_feedback(
-            feedback_type="faces",
-            model="model-001",
-            metadata={"query":st.session_state.query,"response":st.session_state.response},
-            success_fail_message=False,
-            user_id=userEmail,
-            align="flex-start",
-            open_feedback_label="Please help us understand your response better"
-        )
-
-        #st.divider()
-        feedbackCol1, feedbackCol2, feedbackCol3 = st.columns([1,1,1])
-        with feedbackCol2:
-            searchAgain = st.button("Search Again!", on_click=reboot,type="primary")
-
-    
-    with tab2:
         with st.expander("Other relevant papers"):
             for i,data in enumerate(pubmedPapers):
                 url = data["url"]
@@ -279,6 +261,55 @@ unsafe_allow_html=True)
                             key=f"Pubmed-Feedback:{i}",
                             user_id=userEmail
                         )
+
+        st.markdown("")
+        st.divider()
+        st.subheader("Feedback")
+        collectorMain.st_feedback(
+            feedback_type="faces",
+            model="model-001",
+            metadata={"query":st.session_state.query,"response":st.session_state.response},
+            success_fail_message=False,
+            user_id=userEmail,
+            align="flex-start",
+            open_feedback_label="Please help us understand your response better"
+        )
+
+        #st.divider()
+        feedbackCol1, feedbackCol2, feedbackCol3 = st.columns([1,1,1])
+        with feedbackCol2:
+            searchAgain = st.button("Search Again!", on_click=reboot,type="primary")
+
+
+
+@st.cache_data(show_spinner=False)
+def load_csv(path):
+    df = pd.read_csv(path)
+    return df
+    
+with tab2:
+
+
+    #metadataDF = load_csv("/Users/arihantbarjatya/Documents/fastbio/fastbio/database_storage/metadata.csv")
+    metadataDF = load_csv("path here")
+    dataset = st.selectbox("Select the dataset to analyse",metadataDF["ID"])
+    if dataset: 
+        #datasetPath = "/Users/arihantbarjatya/Documents/fastbio/database_storage/omics_data/" + dataset + ".csv"
+        datasetPath = "path here"
+        data = load_csv(datasetPath)
+        st.dataframe(data)
+        agent = create_csv_agent(ChatOpenAI(temperature=0, model="gpt-3.5-turbo-0613"),datasetPath,verbose=True,agent_type=AgentType.OPENAI_FUNCTIONS)
+
+    datasetQuery = st.text_input("Query this dataset")
+    if datasetQuery:
+        agentResponse = agent.run(datasetQuery)
+        st.write(f'<i>{agentResponse}</i>',unsafe_allow_html=True)
+
+
+    st.divider()
+    with st.expander("Metadata File"):
+        metadata = st.dataframe(metadataDF)
+        
                         
 
         
@@ -293,5 +324,3 @@ unsafe_allow_html=True)
 
 
     
-
-

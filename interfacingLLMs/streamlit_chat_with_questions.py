@@ -6,7 +6,7 @@ from llama_index.readers.schema.base import Document
 import os 
 import openai
 import uuid
-#from trubrics.integrations.streamlit import FeedbackCollector
+from trubrics.integrations.streamlit import FeedbackCollector
 from langchain.agents import create_csv_agent
 from langchain.chat_models import ChatOpenAI
 import os
